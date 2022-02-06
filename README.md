@@ -15,7 +15,7 @@ make -j4
 After running mit_ctrl, change 'use_rc' to 0 and 'control_mode' to 53 in SimControlPanel.
 
 
-To run our controller on the real robot, change the vairable 'isMinicheetah' to true.
+To run our controller on the real robot, change the variable 'isMinicheetah' to true.
 If 'isMinicheetah' is set to be false, then the real robot cannot walk well because of wrong PD gains.
 
 Concerning the RC controller, we removed all the other locomotion mode and replaced them with our controller.
