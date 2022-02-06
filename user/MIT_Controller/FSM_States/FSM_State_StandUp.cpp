@@ -15,7 +15,7 @@
 template <typename T>
 FSM_State_StandUp<T>::FSM_State_StandUp(ControlFSMData<T>* _controlFSMData)
     : FSM_State<T>(_controlFSMData, FSM_StateName::STAND_UP, "STAND_UP"),
-_ini_foot_pos(4){
+_ini_foot_pos(4), _ini_joint_pos(4){
   // Do nothing
   // Set the pre controls safety checks
   this->checkSafeOrientation = false;
@@ -38,7 +38,9 @@ void FSM_State_StandUp<T>::onEnter() {
 
   for(size_t leg(0); leg<4; ++leg){
     _ini_foot_pos[leg] = this->_data->_legController->datas[leg].p;
+    _ini_joint_pos[leg] = this->_data->_legController->datas[leg].q;
   }
+  _target_joint_pos << 0, -0.9, 1.8;
 }
 
 /**
@@ -48,18 +50,15 @@ template <typename T>
 void FSM_State_StandUp<T>::run() {
 
   if(this->_data->_quadruped->_robotType == RobotType::MINI_CHEETAH) {
-    T hMax = 0.25;
-    T progress = 2 * iter * this->_data->controlParameters->controller_dt;
+    T progress = iter * this->_data->controlParameters->controller_dt;
 
     if (progress > 1.){ progress = 1.; }
 
     for(int i = 0; i < 4; i++) {
-      this->_data->_legController->commands[i].kpCartesian = Vec3<T>(500, 500, 500).asDiagonal();
-      this->_data->_legController->commands[i].kdCartesian = Vec3<T>(8, 8, 8).asDiagonal();
+      this->_data->_legController->commands[i].kpJoint = Vec3<T>(80, 80, 80).asDiagonal();
+      this->_data->_legController->commands[i].kdJoint = Vec3<T>(1, 1, 1).asDiagonal();
 
-      this->_data->_legController->commands[i].pDes = _ini_foot_pos[i];
-      this->_data->_legController->commands[i].pDes[2] = 
-        progress*(-hMax) + (1. - progress) * _ini_foot_pos[i][2];
+      this->_data->_legController->commands[i].qDes = _ini_joint_pos[i] * (1. - progress) + progress * _target_joint_pos;
     }
   }
 }
@@ -94,6 +93,12 @@ FSM_StateName FSM_State_StandUp<T>::checkTransition() {
 
     case K_PASSIVE:  // normal c
       this->nextStateName = FSM_StateName::PASSIVE;
+      break;
+
+    case K_RL_JOINT_PD:
+      this->nextStateName = FSM_StateName::RL_JOINT_PD;
+      // Transition time is immediate
+      this->transitionDuration = 0.0;
       break;
 
     default:
@@ -132,6 +137,9 @@ TransitionData<T> FSM_State_StandUp<T>::transition() {
       this->transitionData.done = true;
       break;
 
+    case FSM_StateName::RL_JOINT_PD:
+      this->transitionData.done = true;
+      break;
 
     default:
       std::cout << "[CONTROL FSM] Something went wrong in transition"

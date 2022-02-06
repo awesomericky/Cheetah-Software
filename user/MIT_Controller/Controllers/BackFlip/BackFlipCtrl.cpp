@@ -53,7 +53,7 @@ void BackFlipCtrl<T>::_update_joint_command() {
     DataCtrl::current_iteration = 0;
     tau_mult = 0;
   } else {
-    tau_mult = 1.2;
+    tau_mult = 1.5;  // modified by Naver Labs
     // tau_mult = 1.;
   }
 

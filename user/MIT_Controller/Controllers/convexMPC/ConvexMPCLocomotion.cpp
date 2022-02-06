@@ -86,7 +86,7 @@ void ConvexMPCLocomotion::_SetupCommand(ControlFSMData<float> & data){
     data.userParameters->cmpc_gait = rc_cmd->variable[0];
     _yaw_turn_rate = -rc_cmd->omega_des[2];
     x_vel_cmd = rc_cmd->v_des[0];
-    y_vel_cmd = rc_cmd->v_des[1] * 0.5;
+    y_vel_cmd = rc_cmd->v_des[1];
     _body_height += rc_cmd->height_variation * 0.08;
   }else{
     _yaw_turn_rate = data._desiredStateCommand->rightAnalogStick[0];
@@ -100,6 +100,18 @@ void ConvexMPCLocomotion::_SetupCommand(ControlFSMData<float> & data){
   _roll_des = 0.;
   _pitch_des = 0.;
 
+}
+Vec3<float> ConvexMPCLocomotion::getRawCommand(ControlFSMData<float> & data) {
+  const rc_control_settings* rc_cmd = data._desiredStateCommand->rcCommand;
+  Vec3<float> command;
+  if(data.controlParameters->use_rc) {
+    command << rc_cmd->v_des[0], rc_cmd->v_des[1], -rc_cmd->omega_des[2];
+  } else {
+    command << data._desiredStateCommand->leftAnalogStick[1], data._desiredStateCommand->leftAnalogStick[0],
+        _yaw_turn_rate = data._desiredStateCommand->rightAnalogStick[0];
+  }
+
+  return command;
 }
 
 template<>

@@ -24,6 +24,8 @@
 #define K_JOINT_PD 51
 #define K_IMPEDANCE_CONTROL 52
 
+#define K_RL_JOINT_PD 53
+
 #define K_INVALID 100
 
 /**
@@ -33,6 +35,7 @@ enum class FSM_StateName {
   INVALID,
   PASSIVE,
   JOINT_PD,
+  RL_JOINT_PD,
   IMPEDANCE_CONTROL,
   STAND_UP,
   BALANCE_STAND,
@@ -125,7 +128,6 @@ class FSM_State {
   // ModelPredictiveController cMPC
   // RegularizedPredictiveController RPC
 
- private:
   // Create the cartesian P gain matrix
   Mat3<float> kpMat;
 

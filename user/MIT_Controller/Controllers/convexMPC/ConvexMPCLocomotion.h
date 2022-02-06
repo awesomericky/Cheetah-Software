@@ -89,6 +89,7 @@ public:
   template<typename T>
   void run(ControlFSMData<T>& data);
   bool currently_jumping = false;
+  Vec3<float> getRawCommand(ControlFSMData<float> & data);
 
   Vec3<float> pBody_des;
   Vec3<float> vBody_des;

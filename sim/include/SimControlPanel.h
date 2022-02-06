@@ -80,6 +80,8 @@ public slots:
 
   void on_loadUserButton_clicked();
 
+  void on_emergencyButton_clicked();
+
   void on_setTerrainButton_clicked();
 
   void on_hide_floor_checkbox_toggled(bool x) {

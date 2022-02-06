@@ -10,6 +10,7 @@
 #include "INIReader.h"
 #include "ParamHandler.hpp"
 #include "Utilities/utilities.h"
+#include <iostream>
 
 
 #define YAML_COLLECTION_NAME_KEY "__collection-name__"
@@ -366,35 +367,66 @@ void ControlParameters::defineAndInitializeFromYamlFile(const std::string &path)
     collection.addParameter(cp, key);
     switch (cp->_kind) {
       case ControlParameterValueKind::DOUBLE: {
-        double d;
-        assert(paramHandler.getValue(key, d));
+        double d=0.;
+        try {
+          bool is_error = !paramHandler.getValue(key, d);
+          if (is_error) throw is_error;
+        }
+        catch (bool is_error) {
+          std::cout << "parameter initialization failed!" << std::endl;
+        }
+
         cp->initializeDouble(d);
       } break;
 
       case ControlParameterValueKind::FLOAT: {
-        float f;
-        assert(paramHandler.getValue(key, f));
-        cp->initializeFloat(f);
+        float f=0.f;
+        try {
+          bool is_error = !paramHandler.getValue(key, f);
+          if (is_error) throw is_error;
+        }
+        catch (bool is_error) {
+          std::cout << "parameter initialization failed!" << std::endl;
+        }        cp->initializeFloat(f);
       } break;
 
       case ControlParameterValueKind::S64: {
-        s64 f;
-        assert(paramHandler.getValue(key, f));
-        cp->initializeInteger(f);
+        s64 f{};
+        try {
+          bool is_error = !paramHandler.getValue(key, f);
+          if (is_error) throw is_error;
+        }
+        catch (bool is_error) {
+          std::cout << "parameter initialization failed!" << std::endl;
+        }        cp->initializeInteger(f);
       } break;
 
       case ControlParameterValueKind::VEC3_DOUBLE: {
         std::vector<double> vv;
-        assert(paramHandler.getVector(key, vv));
-        assert(vv.size() == 3);
+        try {
+          bool is_error = !paramHandler.getValue(key, vv);
+          bool is_size_error = vv.size() != 3;
+          if (is_error) throw is_error;
+          if (is_size_error) throw is_size_error;
+        }
+        catch (bool is_error) {
+          std::cout << "parameter initialization failed!" << std::endl;
+        }
         Vec3<double> v(vv[0], vv[1], vv[2]);
         cp->initializeVec3d(v);
       } break;
 
       case ControlParameterValueKind::VEC3_FLOAT: {
         std::vector<float> vv;
-        assert(paramHandler.getVector(key, vv));
-        assert(vv.size() == 3);
+        try {
+          bool is_error = !paramHandler.getValue(key, vv);
+          bool is_size_error = vv.size() != 3;
+          if (is_error) throw is_error;
+          if (is_size_error) throw is_size_error;
+        }
+        catch (bool is_error) {
+          std::cout << "parameter initialization failed!" << std::endl;
+        }
         Vec3<float> v(vv[0], vv[1], vv[2]);
         cp->initializeVec3f(v);
       } break;
@@ -445,35 +477,67 @@ void ControlParameters::initializeFromYamlFile(const std::string& path) {
     ControlParameter& cp = collection.lookup(key);
     switch (cp._kind) {
       case ControlParameterValueKind::DOUBLE: {
-        double d;
-        assert(paramHandler.getValue(key, d));
+        double d=0.;
+        try {
+          bool is_error = !paramHandler.getValue(key, d);
+          if (is_error) throw is_error;
+        }
+        catch (bool is_error) {
+          std::cout << "parameter initialization failed!" << std::endl;
+        }
         cp.initializeDouble(d);
       } break;
 
       case ControlParameterValueKind::FLOAT: {
-        float f;
-        assert(paramHandler.getValue(key, f));
+        float f=0.f;
+        try {
+          bool is_error = !paramHandler.getValue(key, f);
+          if (is_error) throw is_error;
+        }
+        catch (bool is_error) {
+          std::cout << "parameter initialization failed!" << std::endl;
+        }
         cp.initializeFloat(f);
       } break;
 
       case ControlParameterValueKind::S64: {
-        s64 f;
-        assert(paramHandler.getValue(key, f));
+        s64 f{};
+        try {
+          bool is_error = !paramHandler.getValue(key, f);
+          if (is_error) throw is_error;
+        }
+        catch (bool is_error) {
+          std::cout << "parameter initialization failed!" << std::endl;
+        }
         cp.initializeInteger(f);
       } break;
 
       case ControlParameterValueKind::VEC3_DOUBLE: {
         std::vector<double> vv;
-        assert(paramHandler.getVector(key, vv));
-        assert(vv.size() == 3);
+        try {
+          bool is_error = !paramHandler.getValue(key, vv);
+          bool is_size_error = vv.size() != 3;
+          if (is_error) throw is_error;
+          if (is_size_error) throw is_size_error;
+        }
+        catch (bool is_error) {
+          std::cout << "parameter initialization failed!" << std::endl;
+        }
         Vec3<double> v(vv[0], vv[1], vv[2]);
         cp.initializeVec3d(v);
       } break;
 
       case ControlParameterValueKind::VEC3_FLOAT: {
         std::vector<float> vv;
-        assert(paramHandler.getVector(key, vv));
-        assert(vv.size() == 3);
+        try {
+          bool is_error = !paramHandler.getValue(key, vv);
+          bool is_size_error = vv.size() != 3;
+          if (is_error) throw is_error;
+          if (is_size_error) throw is_size_error;
+        }
+        catch (bool is_error) {
+          std::cout << "parameter initialization failed!" << std::endl;
+        }
         Vec3<float> v(vv[0], vv[1], vv[2]);
         cp.initializeVec3f(v);
       } break;

@@ -261,6 +261,41 @@
         </widget>
        </item>
        <item>
+        <widget class="QFrame" name="frame_emergency">
+         <property name="frameShape">
+          <enum>QFrame::StyledPanel</enum>
+         </property>
+         <property name="frameShadow">
+          <sizepolicy>
+           <verstretch>100</verstretch>
+          </sizepolicy>
+          <enum>QFrame::Raised</enum>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_emergency">
+          <item row="0" column="0">
+           <widget class="QPushButton" name="emergencyButton">
+            <property name="text">
+             <string>
+
+
+
+       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+       !!!!!!!!!!!MIT_CTRL!!!!!!!!!!!
+       !!!!EMERGENCY STOP!!!!
+       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+       !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+
+             </string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
         <widget class="QFrame" name="frame_4">
          <property name="frameShape">
           <enum>QFrame::StyledPanel</enum>

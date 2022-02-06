@@ -70,7 +70,7 @@ void SimulationBridge::run() {
       _sharedMemory().robotIsDone();
     }
   } catch (std::exception& e) {
-    strncpy(_sharedMemory().robotToSim.errorMessage, e.what(), sizeof(_sharedMemory().robotToSim.errorMessage));
+    strcpy(_sharedMemory().robotToSim.errorMessage, e.what());
     _sharedMemory().robotToSim.errorMessage[sizeof(_sharedMemory().robotToSim.errorMessage) - 1] = '\0';
     throw e;
   }
@@ -95,7 +95,13 @@ void SimulationBridge::handleControlParameters() {
 
   // sanity check
   u64 nRequests = request.requestNumber - response.requestNumber;
-  assert(nRequests == 1);
+  try {
+    bool is_error = (nRequests != 1);
+    if (is_error)
+      throw is_error;
+  } catch (bool is_error) {
+    std::cout << "requestNumber != 1" << std::endl;
+  }
 
   response.nParameters = _robotParams.collection._map
                              .size();  // todo don't do this every single time?

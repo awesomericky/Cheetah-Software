@@ -44,6 +44,7 @@ ControlFSM<T>::ControlFSM(Quadruped<T>* _quadruped,
   statesList.invalid = nullptr;
   statesList.passive = new FSM_State_Passive<T>(&data);
   statesList.jointPD = new FSM_State_JointPD<T>(&data);
+  statesList.rlJointPD = new FSM_State_RLJointPD<T>(&data);
   statesList.impedanceControl = new FSM_State_ImpedanceControl<T>(&data);
   statesList.standUp = new FSM_State_StandUp<T>(&data);
   statesList.balanceStand = new FSM_State_BalanceStand<T>(&data);
@@ -106,6 +107,9 @@ void ControlFSM<T>::runFSM() {
 
     } else if(rc_mode == RC_mode::QP_STAND){
       data.controlParameters->control_mode = K_BALANCE_STAND;
+
+    } else if(rc_mode == RC_mode::RL_JOINT_PD){
+      data.controlParameters->control_mode = K_RL_JOINT_PD;
 
     } else if(rc_mode == RC_mode::VISION){
       data.controlParameters->control_mode = K_VISION;
@@ -200,6 +204,13 @@ FSM_OperatingMode ControlFSM<T>::safetyPreCheck() {
     }
   }
 
+  if (this->data._desiredStateCommand->gamepadCommand->rightBumper ||
+      this->data._desiredStateCommand->gamepadCommand->leftBumper) {
+    operatingMode = FSM_OperatingMode::ESTOP;
+    std::cout << "Emergency button is pressed!" << std::endl;
+    std::cout << "Transition to the emergency mode!" << std::endl;
+  }
+
   // Default is to return the current operating mode
   return operatingMode;
 }
@@ -248,6 +259,9 @@ FSM_State<T>* ControlFSM<T>::getNextState(FSM_StateName stateName) {
 
     case FSM_StateName::JOINT_PD:
       return statesList.jointPD;
+
+    case FSM_StateName::RL_JOINT_PD:
+      return statesList.rlJointPD;
 
     case FSM_StateName::IMPEDANCE_CONTROL:
       return statesList.impedanceControl;

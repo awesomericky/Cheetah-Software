@@ -6,6 +6,7 @@
 #include <leg_control_command_lcmt.hpp>
 #include "ui_SimControlPanel.h"
 #include "JoystickTest.h"
+#include <string>
 
 
 /*!
@@ -868,4 +869,52 @@ void SimControlPanel::on_kickButton_clicked() {
   FBModelState<double> state = _simulation->getRobotState();
   state.bodyVelocity += kickVelocity;
   _simulation->setRobotState(state);
+}
+
+void SimControlPanel::on_emergencyButton_clicked() {  // set control_mode to 0(passive)
+  auto cell = ui->robotTable->item(1, 0);
+  std::string cellName = cell->text().toStdString();
+
+  auto& parameter = (_simulationMode ? _simulation->getRobotParams()
+                                     : _robotInterface->getParams())
+      .collection.lookup(cellName);
+  ControlParameterValueKind kind = parameter._kind;
+  ControlParameterValue oldValue = parameter.get(kind);
+
+  bool success = true;
+
+  try {
+    parameter.setFromString(std::to_string(0));
+  } catch (std::exception& e) {
+    success = false;
+  }
+
+  if (!success) {
+    printf("[ERROR] invalid data, restoring old data!\n");
+    parameter.set(oldValue, kind);
+
+    assert(!_ignoreTableCallbacks);
+
+    _ignoreTableCallbacks = true;
+    ui->robotTable->item(1, 1)->setText(
+        QString(parameter
+                    .toString()
+                    .c_str()));
+    _ignoreTableCallbacks = false;
+  } else {
+    if (_simulationMode) {
+      if (_simulation->isRobotConnected()) {
+        _simulation->sendControlParameter(
+            cellName, parameter.get(parameter._kind), parameter._kind, false);
+      }
+
+      _ignoreTableCallbacks = true;
+      ui->robotTable->item(1, 1)->setText(
+          QString(parameter.toString().c_str()));
+      _ignoreTableCallbacks = false;
+    } else {
+      _robotInterface->sendControlParameter(
+          cellName, parameter.get(parameter._kind), parameter._kind, false);
+    }
+  }
 }

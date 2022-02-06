@@ -4,6 +4,7 @@
  */
 #ifndef _RT_RC_INTERFACE
 #define _RT_RC_INTERFACE
+#include <chrono>
 
 class rc_control_settings {
   public:
@@ -25,6 +26,7 @@ namespace RC_mode{
   constexpr int VISION = 6;
   constexpr int LOCOMOTION = 11;
   constexpr int RECOVERY_STAND = 12;
+  constexpr int RL_JOINT_PD = 53;
 
   // Experiment Mode
   constexpr int TWO_LEG_STANCE_PRE = 20;
