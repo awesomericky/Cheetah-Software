@@ -41,9 +41,6 @@ void sbus_packet_complete() {
 
   auto estop_switch = data.right_lower_right_switch;
 
-  auto left_select = data.left_lower_right_switch;
-  auto right_select = data.right_lower_left_switch;
-
   int selected_mode = 0;
 
   switch(estop_switch) {
@@ -57,26 +54,22 @@ void sbus_packet_complete() {
       break;
 
     case SWITCH_DOWN: // run
-      if(left_select == SWITCH_MIDDLE) {
-        if(right_select == SWITCH_MIDDLE) selected_mode = RC_mode::RL_JOINT_PD;
-      }
+      selected_mode = RC_mode::RL_JOINT_PD;
 
 
-  // Deadband
-  for(int i(0); i<2; ++i){
-    data.left_stick[i] = deadband(data.left_stick[i], 0.1, -1., 1.);
-    data.right_stick[i] = deadband(data.right_stick[i], 0.1, -1., 1.);
-  }
+    // Deadband
+    for(int i(0); i<2; ++i){
+      data.left_stick[i] = deadband(data.left_stick[i], 0.1, -1., 1.);
+      data.right_stick[i] = deadband(data.right_stick[i], 0.1, -1., 1.);
+    }
 
-      if(selected_mode == RC_mode::RL_JOINT_PD) {
-        rc_control.v_des[0] = v_scale * data.left_stick[1];
-        rc_control.v_des[1] = -v_scale * data.left_stick[0] / (data.knobs[0]*1.5f + 2.0f);
-        rc_control.v_des[2] = 0;
+    rc_control.v_des[0] = v_scale * data.left_stick[1];
+    rc_control.v_des[1] = -v_scale * data.left_stick[0] / (data.knobs[0]*1.5f + 2.0f);
+    rc_control.v_des[2] = 0;
 
-        rc_control.omega_des[0] = 0;
-        rc_control.omega_des[1] = 0;
-        rc_control.omega_des[2] = -w_scale * data.right_stick[0];
-      }
+    rc_control.omega_des[0] = 0;
+    rc_control.omega_des[1] = 0;
+    rc_control.omega_des[2] = -w_scale * data.right_stick[0];
 
       break;
   }
