@@ -63,22 +63,22 @@ void sbus_packet_complete() {
       data.right_stick[i] = deadband(data.right_stick[i], 0.1, -1., 1.);
     }
 
-    rc_control.v_des[0] = v_scale * data.left_stick[1];
-    rc_control.v_des[1] = -v_scale * data.left_stick[0] / (data.knobs[0]*1.5f + 2.0f);
+//    rc_control.v_des[0] = v_scale * data.left_stick[1];
+//    rc_control.v_des[1] = -v_scale * data.left_stick[0] / (data.knobs[0]*1.5f + 2.0f);
+//    rc_control.v_des[2] = 0;
+//
+//    rc_control.omega_des[0] = 0;
+//    rc_control.omega_des[1] = 0;
+//    rc_control.omega_des[2] = -w_scale * data.right_stick[0];
+
+
+    rc_control.v_des[0] = data.left_stick[1];
+    rc_control.v_des[1] = -data.left_stick[0];
     rc_control.v_des[2] = 0;
 
     rc_control.omega_des[0] = 0;
     rc_control.omega_des[1] = 0;
-    rc_control.omega_des[2] = -w_scale * data.right_stick[0];
-
-
-    rc_control.v_des[0] = v_scale * data.left_stick[1];
-    rc_control.v_des[1] = -v_scale * data.left_stick[0] / (data.knobs[0]*1.5f + 2.0f);
-    rc_control.v_des[2] = 0;
-
-    rc_control.omega_des[0] = 0;
-    rc_control.omega_des[1] = 0;
-    rc_control.omega_des[2] = -w_scale * data.right_stick[0];
+    rc_control.omega_des[2] = -data.right_stick[0];
 
       break;
   }
