@@ -1,9 +1,9 @@
 cmake_minimum_required(VERSION 3.5)
 project(sim)
 
-SET(Qt5Core_DIR /opt/Qt5.12.9/5.12.9/gcc_64/lib/cmake/Qt5Core)
-SET(Qt5Widgets_DIR /opt/Qt5.12.9/5.12.9/gcc_64/lib/cmake/Qt5Widgets)
-SET(Qt5Gamepad_DIR /opt/Qt5.12.9/5.12.9/gcc_64/lib/cmake/Qt5Gamepad)
+SET(Qt5Core_DIR /opt/Qt/5.15.2/gcc_64/lib/cmake/Qt5Core)
+SET(Qt5Widgets_DIR /opt/Qt/5.15.2/gcc_64/lib/cmake/Qt5Widgets)
+SET(Qt5Gamepad_DIR /opt/Qt/5.15.2/gcc_64/lib/cmake/Qt5Gamepad)
 #SET(Qt5Core_DIR /opt/Qt/5.12.4/gcc_64/lib/cmake/Qt5Core)
 #SET(Qt5Widgets_DIR /opt/Qt/5.12.4/gcc_64/lib/cmake/Qt5Widgets)
 #SET(Qt5Gamepad_DIR /opt/Qt/5.12.4/gcc_64/lib/cmake/Qt5Gamepad)

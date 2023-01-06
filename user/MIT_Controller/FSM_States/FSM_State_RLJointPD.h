@@ -7,8 +7,9 @@
 #include "cpuMLP.hpp"
 #include "../common/include/Controllers/StateEstimatorContainer.h"
 #include "../common/include/Controllers/LegController.h"
-#define OBSDIM 141  // TODO
-#define UNOBSDIM 11  // TODO
+#include "contactPlanning.hpp"
+
+#define OBSDIM 147  // TODO
 
 /**
  *
@@ -34,44 +35,36 @@ class FSM_State_RLJointPD : public FSM_State<T> {
   // Behavior to be carried out when exiting a state
   void onExit();
 
-  virtual void updateHistory();
-  virtual void updateObservation();
-  virtual void updatePreviousActions();
   virtual const Eigen::Matrix<float, OBSDIM, 1>& getObservation();
 
  private:
   // Keep track of the control iterations
   int iter = 0;
-  DVec<T> _ini_jpos;
 
  protected:
 
-  float _bodyHeight;
   Eigen::Matrix<float, 3, 1> _bodyOri;
-  Eigen::Matrix<float, 12, 1> _jointQ;
-  Eigen::Matrix<float, 3, 1> _bodyVel;
   Eigen::Matrix<float, 3, 1> _bodyAngularVel;
-  Eigen::Matrix<float, 12, 1> _jointQd;
+  Eigen::Matrix<float, 12, 1> _jointQ, _jointQd;
+  Eigen::Matrix<float, 12, 1> previousJointQ_, previousJointQd_;
   Eigen::Matrix<float, OBSDIM, 1> _obs;
-  Eigen::Matrix<float, OBSDIM + UNOBSDIM, 1> actorObs_;
-  Eigen::Matrix<float, UNOBSDIM, 1> estOut_;
   int _obsDim, historyLength_, nJoints_, actionDim_;
   Eigen::VectorXf _obsMean, _obsVar;
-  Eigen::VectorXf jointPosErrorHist_, jointVelHist_, historyTempMem_;
-  Eigen::VectorXf q_init;
-  Eigen::VectorXf pTarget12_, pTarget12_prev_;
-  Eigen::VectorXf previousAction_, prepreviousAction_;
-  Eigen::VectorXf footPos_;
+  Eigen::VectorXf previousActionHist_, jointPosHist_, jointVelHist_, historyTempMem_;
+  Eigen::VectorXf torqueInput_;
+  Eigen::VectorXf previousAction_;
+  Eigen::Vector4f isContact_, contactPhase_;
   Eigen::Vector3f command_;
 
   std::string _loadPath;
 
+  planning::contactPlanning contactPlanning_;
+
   std::chrono::steady_clock::time_point begin_;
   std::chrono::steady_clock::time_point end_;
 
-  rai::FuncApprox::MLP_fullyconnected<float, OBSDIM + UNOBSDIM, 12, rai::FuncApprox::ActivationType::leakyrelu> policy;
-  rai::FuncApprox::MLP_fullyconnected<float, OBSDIM, UNOBSDIM, rai::FuncApprox::ActivationType::leakyrelu> estimator;
-  double control_dt_ = 0.01;
+  rai::FuncApprox::MLP_fullyconnected<float, OBSDIM, 12, rai::FuncApprox::ActivationType::leakyrelu> policy;
+  double control_dt_ = 0.026;
 
   bool emergency_stop = false;
 

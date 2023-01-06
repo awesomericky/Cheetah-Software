@@ -42,11 +42,11 @@ const float abad_side_sign[4] = {-1.f, -1.f, 1.f, 1.f};
 const float hip_side_sign[4] = {-1.f, 1.f, -1.f, 1.f};
 const float knee_side_sign[4] = {-.6429f, .6429f, -.6429f, .6429f};
 
-// only used for actual robot
+// only used for actual robot  // TODO check the offset. These offsets are for HUBOLAB Minicheetah's new legs.
 const float abad_offset[4] = {0.f, 0.f, 0.f, 0.f};
-const float hip_offset[4] = {M_PI / 2.f, -M_PI / 2.f, -M_PI / 2.f, M_PI / 2.f};
-const float knee_offset[4] = {K_KNEE_OFFSET_POS, -K_KNEE_OFFSET_POS,
-                              -K_KNEE_OFFSET_POS, K_KNEE_OFFSET_POS};
+const float hip_offset[4] = {M_PI / 2.f-0.12, -M_PI / 2.f+0.12, -M_PI / 2.f+0.12, M_PI / 2.f-0.12};
+const float knee_offset[4] = {K_KNEE_OFFSET_POS-0.093, -K_KNEE_OFFSET_POS+0.093,
+                              -K_KNEE_OFFSET_POS+0.093, K_KNEE_OFFSET_POS-0.093};
 
 /*!
  * Compute SPI message checksum
