@@ -62,7 +62,6 @@ FSM_State_RLJointPD<T>::FSM_State_RLJointPD(ControlFSMData<T>* _controlFSMData)
   obsMean_file.close();
   obsVariance_file.close();
 
-  previousActionHist_.setZero(nJoints_ * historyLength_);
   jointPosHist_.setZero(nJoints_ * historyLength_);
   jointVelHist_.setZero(nJoints_ * historyLength_);
 
@@ -83,18 +82,16 @@ void FSM_State_RLJointPD<T>::onEnter() {
   contactPlanning_.reset();
 
   historyTempMem_.setZero();
-  previousActionHist_.setZero();
   previousAction_.setZero();
-  for(int i = 0; i < historyLength_; i++) {
-    jointPosHist_.segment(nJoints_ * i, nJoints_) <<
-      this->_data->_legController->datas[0].q, this->_data->_legController->datas[1].q, this->_data->_legController->datas[2].q, this->_data->_legController->datas[3].q;
-    jointVelHist_.segment(nJoints_ * i, nJoints_) <<
-      this->_data->_legController->datas[0].qd, this->_data->_legController->datas[1].qd, this->_data->_legController->datas[2].qd, this->_data->_legController->datas[3].qd;
-  }
   _jointQ << this->_data->_legController->datas[0].q, this->_data->_legController->datas[1].q, this->_data->_legController->datas[2].q, this->_data->_legController->datas[3].q;
   _jointQd << this->_data->_legController->datas[0].qd, this->_data->_legController->datas[1].qd, this->_data->_legController->datas[2].qd, this->_data->_legController->datas[3].qd;
+  for(int i = 0; i < historyLength_; i++) {
+    jointPosHist_.segment(nJoints_ * i, nJoints_) << _jointQ;
+    jointVelHist_.segment(nJoints_ * i, nJoints_) << _jointQd;
+  }
 
   for(int i=0; i<4; i++) {
+    this->_data->_legController->commands->zero();
     preCommands[i].zero();
   }
 
@@ -116,84 +113,72 @@ void FSM_State_RLJointPD<T>::run() {
 
   if (emergency_stop) return;  // don't start the code if it violated orientation condition
 
-//  end_ = std::chrono::steady_clock::now();
-//
-//  if (std::chrono::duration_cast<std::chrono::microseconds>(end_ - begin_).count() > int(control_dt_ * 1000000)) {
-//    begin_ = std::chrono::steady_clock::now();
-//  }
-//  else {
-//    for (int leg(0); leg < 4; ++leg) {
-//      this->_data->_legController->commands[leg] = preCommands[leg];
-//    }
-//    return;
-//  }
+  end_ = std::chrono::steady_clock::now();
 
-  if (iterationCounter % iterationsBetweenMPC == 0) {
-
-    if (this->_data->controlParameters->use_rc) {
-      command_(0) = this->_data->_desiredStateCommand->rcCommand->v_des[0];
-      command_(1) = this->_data->_desiredStateCommand->rcCommand->v_des[1];
-      command_(2) = this->_data->_desiredStateCommand->rcCommand->omega_des[2];
-      if (command_.norm() < 0.4) command_.setZero();
-    } else {
-      command_(0) = this->_data->_desiredStateCommand->gamepadCommand->leftStickAnalog(1);
-      command_(1) = -this->_data->_desiredStateCommand->gamepadCommand->leftStickAnalog(0);
-      command_(2) = this->_data->_desiredStateCommand->gamepadCommand->rightStickAnalog(0);
-      if (command_.norm() < 0.4) command_.setZero();
-    }
-
-    previousJointQ_ = _jointQ;
-    previousJointQd_ = _jointQd;
-    _jointQ
-        << this->_data->_legController->datas[0].q, this->_data->_legController->datas[1].q, this->_data->_legController->datas[2].q, this->_data->_legController->datas[3].q;
-    _jointQd
-        << this->_data->_legController->datas[0].qd, this->_data->_legController->datas[1].qd, this->_data->_legController->datas[2].qd, this->_data->_legController->datas[3].qd;
-
-    historyTempMem_ = jointVelHist_;
-    jointVelHist_.head((historyLength_ - 1) * nJoints_) = historyTempMem_.tail((historyLength_ - 1) * nJoints_);
-    jointVelHist_.tail(nJoints_) = previousJointQd_;
-    historyTempMem_ = jointPosHist_;
-    jointPosHist_.head((historyLength_ - 1) * nJoints_) = historyTempMem_.tail((historyLength_ - 1) * nJoints_);
-    jointPosHist_.tail(nJoints_) = previousJointQ_;
-
-    contactPlanning_.updateContactSequence();
-    isContact_ = contactPlanning_.getIsContact();
-    contactPhase_ = contactPlanning_.getContactPhase();
-    this->_data->_stateEstimator->setContactPhase(isContact_);
-    this->_data->_stateEstimator->run();
-    _bodyOri
-        << this->_data->_stateEstimator->getResult().rBody.transpose().row(2).transpose(); // body orientation 3 cf) rBody: R_bw
-    _bodyAngularVel << this->_data->_stateEstimator->getResult().omegaBody;  // angular velocity 3
-
-    _obs = getObservation();
-
-    for (int i = 0; i < _obs.size(); i++) {
-      _obs(i) = (_obs(i) - _obsMean(i)) / std::sqrt(_obsVar(i) + 1e-8);
-      if (_obs(i) > 10) _obs(i) = 10.0;
-      if (_obs(i) < -10) _obs(i) = -10.0;
-    }
-
-    // action scaling
-    torqueInput_ = policy.forward(_obs);
-    previousAction_ = torqueInput_;
-
-    this->_data->_legController->_legsEnabled = true;
-
-    for (int leg(0); leg < 4; ++leg) {
-      for (int jidx(0); jidx < 3; ++jidx) {
-        this->_data->_legController->commands[leg].tauFeedForward[jidx] = torqueInput_(leg * 3 + jidx);
-      }
-
-      preCommands[leg] = this->_data->_legController->commands[leg];
-    }
+  if (std::chrono::duration_cast<std::chrono::microseconds>(end_ - begin_).count() > int(control_dt_ * 1000000)) {
+    begin_ = std::chrono::steady_clock::now();
   }
   else {
     for (int leg(0); leg < 4; ++leg) {
       this->_data->_legController->commands[leg] = preCommands[leg];
     }
+    return;
   }
 
-  iterationCounter++;
+  if (this->_data->controlParameters->use_rc) {
+    command_(0) = this->_data->_desiredStateCommand->rcCommand->v_des[0];
+    command_(1) = this->_data->_desiredStateCommand->rcCommand->v_des[1];
+    command_(2) = this->_data->_desiredStateCommand->rcCommand->omega_des[2];
+    if (command_.norm() < 0.4) command_.setZero();
+  }
+  else {
+    command_(0) = this->_data->_desiredStateCommand->gamepadCommand->leftStickAnalog(1);
+    command_(1) = -this->_data->_desiredStateCommand->gamepadCommand->leftStickAnalog(0);
+    command_(2) = this->_data->_desiredStateCommand->gamepadCommand->rightStickAnalog(0);
+    if (command_.norm() < 0.4) command_.setZero();
+  }
+
+  previousJointQ_ = _jointQ;
+  previousJointQd_ = _jointQd;
+  _jointQ << this->_data->_legController->datas[0].q, this->_data->_legController->datas[1].q, this->_data->_legController->datas[2].q, this->_data->_legController->datas[3].q;
+  _jointQd << this->_data->_legController->datas[0].qd, this->_data->_legController->datas[1].qd, this->_data->_legController->datas[2].qd, this->_data->_legController->datas[3].qd;
+
+  historyTempMem_ = jointVelHist_;
+  jointVelHist_.head((historyLength_-1) * nJoints_) = historyTempMem_.tail((historyLength_-1) * nJoints_);
+  jointVelHist_.tail(nJoints_) = previousJointQd_;
+  historyTempMem_ = jointPosHist_;
+  jointPosHist_.head((historyLength_-1) * nJoints_) = historyTempMem_.tail((historyLength_-1) * nJoints_);
+  jointPosHist_.tail(nJoints_) = previousJointQ_;
+
+  contactPlanning_.updateContactSequence();
+  isContact_ = contactPlanning_.getIsContact();
+  contactPhase_ = contactPlanning_.getContactPhase();
+  this->_data->_stateEstimator->setContactPhase(isContact_);
+  this->_data->_stateEstimator->run();
+  _bodyOri << this->_data->_stateEstimator->getResult().rBody.transpose().row(2).transpose(); // body orientation 3 cf) rBody: R_bw
+  _bodyAngularVel << this->_data->_stateEstimator->getResult().omegaBody;  // angular velocity 3
+
+  _obs = getObservation();
+
+  for (int i = 0; i < _obs.size(); i++) {
+    _obs(i) = (_obs(i) - _obsMean(i)) / std::sqrt(_obsVar(i) + 1e-8);
+    if (_obs(i) > 10) _obs(i) = 10.0;
+    if (_obs(i) < -10) _obs(i) = -10.0;
+  }
+
+  // action scaling
+  torqueInput_ = policy.forward(_obs);
+  previousAction_ = torqueInput_;
+
+  this->_data->_legController->_legsEnabled = true;
+
+  for (int leg(0); leg < 4; ++leg) {
+    for (int jidx(0); jidx < 3; ++jidx) {
+      this->_data->_legController->commands[leg].tauFeedForward[jidx] = torqueInput_(leg * 3 + jidx);
+    }
+
+    preCommands[leg] = this->_data->_legController->commands[leg];
+  }
 }
 
 /**

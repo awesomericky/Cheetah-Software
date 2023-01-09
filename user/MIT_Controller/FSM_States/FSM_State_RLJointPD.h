@@ -50,7 +50,7 @@ class FSM_State_RLJointPD : public FSM_State<T> {
   Eigen::Matrix<float, OBSDIM, 1> _obs;
   int _obsDim, historyLength_, nJoints_, actionDim_;
   Eigen::VectorXf _obsMean, _obsVar;
-  Eigen::VectorXf previousActionHist_, jointPosHist_, jointVelHist_, historyTempMem_;
+  Eigen::VectorXf jointPosHist_, jointVelHist_, historyTempMem_;
   Eigen::VectorXf torqueInput_;
   Eigen::VectorXf previousAction_;
   Eigen::Vector4f isContact_, contactPhase_;
