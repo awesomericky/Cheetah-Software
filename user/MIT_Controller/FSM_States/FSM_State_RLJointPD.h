@@ -66,6 +66,9 @@ class FSM_State_RLJointPD : public FSM_State<T> {
   rai::FuncApprox::MLP_fullyconnected<float, OBSDIM, 12, rai::FuncApprox::ActivationType::leakyrelu> policy;
   double control_dt_ = 0.026;
 
+  int iterationCounter = 0;
+  int iterationsBetweenMPC = 13;
+
   bool emergency_stop = false;
 
   LegControllerCommand<float> preCommands[4];

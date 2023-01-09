@@ -36,8 +36,8 @@ void sbus_packet_complete() {
   Taranis_X7_data data;
   update_taranis_x7(&data);
 
-  float v_scale = data.knobs[0]*1.5f + 2.0f; // from 0.5 to 3.5
-  float w_scale = data.knobs[0]*1.f + 2.f; // from 1.0 to 3.0
+//  float v_scale = data.knobs[0]*1.5f + 2.0f; // from 0.5 to 3.5
+//  float w_scale = data.knobs[0]*1.f + 2.f; // from 1.0 to 3.0
 
   auto estop_switch = data.right_lower_right_switch;
 
