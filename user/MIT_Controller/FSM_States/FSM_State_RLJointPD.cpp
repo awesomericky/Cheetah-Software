@@ -19,7 +19,7 @@
 template <typename T>
 FSM_State_RLJointPD<T>::FSM_State_RLJointPD(ControlFSMData<T>* _controlFSMData)
     : FSM_State<T>(_controlFSMData, FSM_StateName::RL_JOINT_PD, "RL_JOINT_PD"),
-        contactPlanning_(10, 0.026), policy({512, 256, 64}){
+        contactPlanning_(26, 0.01), policy({512, 256, 64}){
 
   std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
   std::cout << "Setup Joint Position Control learned by Reinforcement Learning" << std::endl;
@@ -169,6 +169,14 @@ void FSM_State_RLJointPD<T>::run() {
   // action scaling
   torqueInput_ = policy.forward(_obs);
   previousAction_ = torqueInput_;
+
+  double kneeGearRatio = 9.33 / 6.;
+  bool isMiniCheetah = true;
+  if (isMiniCheetah) {
+    for (int i = 0; i < 4; i++) {
+      torqueInput_(i * 3 + 2) = torqueInput_(i * 3 + 2) / kneeGearRatio;
+    }
+  }
 
   this->_data->_legController->_legsEnabled = true;
 

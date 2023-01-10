@@ -64,7 +64,7 @@ class FSM_State_RLJointPD : public FSM_State<T> {
   std::chrono::steady_clock::time_point end_;
 
   rai::FuncApprox::MLP_fullyconnected<float, OBSDIM, 12, rai::FuncApprox::ActivationType::leakyrelu> policy;
-  double control_dt_ = 0.026;
+  double control_dt_ = 0.01;
 
   int iterationCounter = 0;
   int iterationsBetweenMPC = 13;
