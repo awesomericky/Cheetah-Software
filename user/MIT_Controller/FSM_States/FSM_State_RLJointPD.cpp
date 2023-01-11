@@ -25,7 +25,7 @@ FSM_State_RLJointPD<T>::FSM_State_RLJointPD(ControlFSMData<T>* _controlFSMData)
   std::cout << "Setup Joint Position Control learned by Reinforcement Learning" << std::endl;
   std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
 
-  std::string modelNumber = "200";
+  std::string modelNumber = "100";
   _loadPath = std::string(get_current_dir_name()) + "/../actor_model/actor_" + modelNumber + ".txt";
   policy.updateParamFromTxt(_loadPath);
 
@@ -41,6 +41,10 @@ FSM_State_RLJointPD<T>::FSM_State_RLJointPD(ControlFSMData<T>* _controlFSMData)
   _obsVar.setZero(_obsDim);
   previousAction_.setZero(actionDim_);
   command_.setZero();
+
+  qInit_.setZero(actionDim_);
+  pTarget12_.setZero(actionDim_);
+  qInit_ << 0, -0.9, 1.8, 0, -0.9, 1.8, 0, -0.9, 1.8, 0, -0.9, 1.8;
 
   std::string in_line;
   std::ifstream obsMean_file, obsVariance_file;
@@ -82,7 +86,7 @@ void FSM_State_RLJointPD<T>::onEnter() {
   contactPlanning_.reset();
 
   historyTempMem_.setZero();
-  previousAction_.setZero();
+  previousAction_ << qInit_;
   _jointQ << this->_data->_legController->datas[0].q, this->_data->_legController->datas[1].q, this->_data->_legController->datas[2].q, this->_data->_legController->datas[3].q;
   _jointQd << this->_data->_legController->datas[0].qd, this->_data->_legController->datas[1].qd, this->_data->_legController->datas[2].qd, this->_data->_legController->datas[3].qd;
   for(int i = 0; i < historyLength_; i++) {
@@ -91,7 +95,6 @@ void FSM_State_RLJointPD<T>::onEnter() {
   }
 
   for(int i=0; i<4; i++) {
-    this->_data->_legController->commands->zero();
     preCommands[i].zero();
   }
 
@@ -167,23 +170,29 @@ void FSM_State_RLJointPD<T>::run() {
   }
 
   // action scaling
-  torqueInput_ = policy.forward(_obs);
-  previousAction_ = torqueInput_;
+  pTarget12_ = policy.forward(_obs) * 0.1 + qInit_;
+  previousAction_ = pTarget12_;
 
   double kneeGearRatio = 9.33 / 6.;
   bool isMiniCheetah = true;
   if (isMiniCheetah) {
-    for (int i = 0; i < 4; i++) {
-      torqueInput_(i * 3 + 2) = torqueInput_(i * 3 + 2) / kneeGearRatio;
-    }
+    this->kpMat = Vec3<T>(17, 17, 17 / (kneeGearRatio * kneeGearRatio)).asDiagonal();
+    this->kdMat = Vec3<T>(0.4, 0.4, 0.4 / (kneeGearRatio * kneeGearRatio)).asDiagonal();
+  }
+  else {
+    this->kpMat = Vec3<T>(17, 17, 17).asDiagonal();
+    this->kdMat = Vec3<T>(0.4, 0.4, 0.4).asDiagonal();
   }
 
   this->_data->_legController->_legsEnabled = true;
 
   for (int leg(0); leg < 4; ++leg) {
     for (int jidx(0); jidx < 3; ++jidx) {
-      this->_data->_legController->commands[leg].tauFeedForward[jidx] = torqueInput_(leg * 3 + jidx);
+      this->_data->_legController->commands[leg].qDes[jidx] = pTarget12_(leg * 3 + jidx);
+      this->_data->_legController->commands[leg].qdDes[jidx] = 0.;
     }
+    this->_data->_legController->commands[leg].kpJoint = this->kpMat;
+    this->_data->_legController->commands[leg].kdJoint = this->kdMat;
 
     preCommands[leg] = this->_data->_legController->commands[leg];
   }
