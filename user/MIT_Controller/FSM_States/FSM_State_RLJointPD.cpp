@@ -25,7 +25,7 @@ FSM_State_RLJointPD<T>::FSM_State_RLJointPD(ControlFSMData<T>* _controlFSMData)
   std::cout << "Setup Joint Position Control learned by Reinforcement Learning" << std::endl;
   std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
 
-  std::string modelNumber = "4000";
+  std::string modelNumber = "1000";
   _loadPath = std::string(get_current_dir_name()) + "/../actor_model/actor_" + modelNumber + ".txt";
   policy.updateParamFromTxt(_loadPath);
 
