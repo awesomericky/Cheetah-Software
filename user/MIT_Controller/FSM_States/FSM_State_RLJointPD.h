@@ -9,7 +9,7 @@
 #include "../common/include/Controllers/LegController.h"
 #include "contactPlanning.hpp"
 
-#define OBSDIM 147  // TODO
+#define RLOBSDIM 141  // TODO
 
 /**
  *
@@ -35,7 +35,7 @@ class FSM_State_RLJointPD : public FSM_State<T> {
   // Behavior to be carried out when exiting a state
   void onExit();
 
-  virtual const Eigen::Matrix<float, OBSDIM, 1>& getObservation();
+  virtual const Eigen::Matrix<float, RLOBSDIM, 1>& getObservation();
 
  private:
   // Keep track of the control iterations
@@ -47,27 +47,21 @@ class FSM_State_RLJointPD : public FSM_State<T> {
   Eigen::Matrix<float, 3, 1> _bodyAngularVel;
   Eigen::Matrix<float, 12, 1> _jointQ, _jointQd;
   Eigen::Matrix<float, 12, 1> previousJointQ_, previousJointQd_;
-  Eigen::Matrix<float, OBSDIM, 1> _obs;
+  Eigen::Matrix<float, RLOBSDIM, 1> _obs;
   int _obsDim, historyLength_, nJoints_, actionDim_;
   Eigen::VectorXf _obsMean, _obsVar;
   Eigen::VectorXf jointPosHist_, jointVelHist_, historyTempMem_;
   Eigen::VectorXf pTarget12_, qInit_;
   Eigen::VectorXf previousAction_;
-  Eigen::Vector4f isContact_, contactPhase_;
   Eigen::Vector3f command_;
 
   std::string _loadPath;
 
-  planning::contactPlanning contactPlanning_;
-
   std::chrono::steady_clock::time_point begin_;
   std::chrono::steady_clock::time_point end_;
 
-  rai::FuncApprox::MLP_fullyconnected<float, OBSDIM, 12, rai::FuncApprox::ActivationType::leakyrelu> policy;
+  rai::FuncApprox::MLP_fullyconnected<float, RLOBSDIM, 12, rai::FuncApprox::ActivationType::leakyrelu> policy;
   double control_dt_ = 0.01;
-
-  int iterationCounter = 0;
-  int iterationsBetweenMPC = 13;
 
   bool emergency_stop = false;
 

@@ -254,8 +254,26 @@ FSM_StateName FSM_State_RecoveryStand<T>::checkTransition() {
       this->nextStateName = FSM_StateName::VISION;
       break;
 
+    case K_ILRL_JOINT_PD:
+      this->nextStateName = FSM_StateName::ILRL_JOINT_PD;
+      // Transition time is immediate
+      this->transitionDuration = 0.0;
+      break;
+
     case K_RL_JOINT_PD:
       this->nextStateName = FSM_StateName::RL_JOINT_PD;
+      // Transition time is immediate
+      this->transitionDuration = 0.0;
+      break;
+
+    case K_CONCURRENT_RL_JOINT_PD:
+      this->nextStateName = FSM_StateName::CONCURRENT_RL_JOINT_PD;
+      // Transition time is immediate
+      this->transitionDuration = 0.0;
+      break;
+
+    case K_DAGGER_JOINT_PD:
+      this->nextStateName = FSM_StateName::DAGGER_JOINT_PD;
       // Transition time is immediate
       this->transitionDuration = 0.0;
       break;
@@ -304,7 +322,19 @@ TransitionData<T> FSM_State_RecoveryStand<T>::transition() {
       this->transitionData.done = true;
       break;
 
+    case FSM_StateName::ILRL_JOINT_PD:
+      this->transitionData.done = true;
+      break;
+
     case FSM_StateName::RL_JOINT_PD:
+      this->transitionData.done = true;
+      break;
+
+    case FSM_StateName::CONCURRENT_RL_JOINT_PD:
+      this->transitionData.done = true;
+      break;
+
+    case FSM_StateName::DAGGER_JOINT_PD:
       this->transitionData.done = true;
       break;
 

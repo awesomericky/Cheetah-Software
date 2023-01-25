@@ -40,6 +40,8 @@ void sbus_packet_complete() {
 //  float w_scale = data.knobs[0]*1.f + 2.f; // from 1.0 to 3.0
 
   auto estop_switch = data.right_lower_right_switch;
+  auto mode_select_left = data.left_lower_right_switch;
+  auto mode_select_right = data.right_lower_left_switch;
 
   int selected_mode = 0;
 
@@ -54,8 +56,21 @@ void sbus_packet_complete() {
       break;
 
     case SWITCH_DOWN: // run
-      selected_mode = RC_mode::RL_JOINT_PD;
-
+      if (mode_select_left == SWITCH_UP && mode_select_right == SWITCH_UP) {
+        selected_mode = RC_mode::ILRL_JOINT_PD;
+      }
+      else if (mode_select_left == SWITCH_UP && mode_select_right == SWITCH_MIDDLE) {
+        selected_mode = RC_mode::RL_JOINT_PD;
+      }
+      else if (mode_select_left == SWITCH_UP && mode_select_right == SWITCH_DOWN) {
+        selected_mode = RC_mode::LOCOMOTION;
+      }
+      else if (mode_select_left == SWITCH_MIDDLE && mode_select_right == SWITCH_UP) {
+        selected_mode == RC_mode::CONCURRENT_RL_JOINT_PD;
+      }
+      else if (mode_select_left == SWITCH_MIDDLE && mode_select_right == SWITCH_MIDDLE) {
+        selected_mode == RC_mode::DAGGER_JOINT_PD;
+      }
 
     // Deadband
     for(int i(0); i<2; ++i){

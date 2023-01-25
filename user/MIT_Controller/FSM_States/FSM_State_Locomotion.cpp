@@ -121,6 +121,12 @@ FSM_StateName FSM_State_Locomotion<T>::checkTransition() {
         this->transitionDuration = 0.;
         break;
 
+      case K_ILRL_JOINT_PD:
+        this->nextStateName = FSM_StateName::ILRL_JOINT_PD;
+        // Transition time is immediate
+        this->transitionDuration = 0.0;
+        break;
+
       case K_RL_JOINT_PD:
         this->nextStateName = FSM_StateName::RL_JOINT_PD;
         // Transition time is immediate
@@ -181,6 +187,10 @@ TransitionData<T> FSM_State_Locomotion<T>::transition() {
       break;
 
     case FSM_StateName::VISION:
+      this->transitionData.done = true;
+      break;
+
+    case FSM_StateName::ILRL_JOINT_PD:
       this->transitionData.done = true;
       break;
 

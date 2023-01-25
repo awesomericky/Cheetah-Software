@@ -14,7 +14,10 @@
 #include "../FSM_States/FSM_State_BalanceStand.h"
 #include "../FSM_States/FSM_State_ImpedanceControl.h"
 #include "../FSM_States/FSM_State_JointPD.h"
+#include "../FSM_States/FSM_State_ILRLJointPD.h"
 #include "../FSM_States/FSM_State_RLJointPD.h"
+#include "../FSM_States/FSM_State_ConcurrentRLJointPD.h"
+#include "../FSM_States/FSM_State_DAGGERJointPD.h"
 #include "../FSM_States/FSM_State_Locomotion.h"
 #include "../FSM_States/FSM_State_Passive.h"
 #include "../FSM_States/FSM_State_StandUp.h"
@@ -37,7 +40,10 @@ struct FSM_StatesList {
   FSM_State<T>* invalid;
   FSM_State_Passive<T>* passive;
   FSM_State_JointPD<T>* jointPD;
-  FSM_State_RLJointPD<T>* rlJointPD;
+  FSM_State_ILRLJointPD<T>* ILRLJointPD;
+  FSM_State_RLJointPD<T>* RLJointPD;
+  FSM_State_ConcurrentRLJointPD<T>* ConcurrentRLJointPD;
+  FSM_State_DAGGERJointPD<T>* DAGGERJointPD;
   FSM_State_ImpedanceControl<T>* impedanceControl;
   FSM_State_StandUp<T>* standUp;
   FSM_State_BalanceStand<T>* balanceStand;

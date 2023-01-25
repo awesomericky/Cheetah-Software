@@ -262,14 +262,14 @@ void ConvexMPCLocomotion::run(ControlFSMData<float>& data) {
     }
     //if(firstSwing[i]) {
     //footSwingTrajectories[i].setHeight(.05);
-    footSwingTrajectories[i].setHeight(.06);
+    footSwingTrajectories[i].setHeight(.05);
     Vec3<float> offset(0, side_sign[i] * .065, 0);
 
     Vec3<float> pRobotFrame = (data._quadruped->getHipLocation(i) + offset);
 
     pRobotFrame[1] += interleave_y[i] * v_abs * interleave_gain;
     float stance_time = gait->getCurrentStanceTime(dtMPC, i);
-    Vec3<float> pYawCorrected = 
+    Vec3<float> pYawCorrected =
       coordinateRotation(CoordinateAxis::Z, -_yaw_turn_rate* stance_time / 2) * pRobotFrame;
 
 
@@ -278,8 +278,9 @@ void ConvexMPCLocomotion::run(ControlFSMData<float>& data) {
     des_vel[1] = _y_vel_des;
     des_vel[2] = 0.0;
 
-    Vec3<float> Pf = seResult.position + seResult.rBody.transpose() * (pYawCorrected
-          + des_vel * swingTimeRemaining[i]);
+//    Vec3<float> Pf = seResult.position + seResult.rBody.transpose() * (pYawCorrected
+//          + des_vel * swingTimeRemaining[i]);
+    Vec3<float> Pf = seResult.position + seResult.rBody.transpose() * pYawCorrected;
 
     //+ seResult.vWorld * swingTimeRemaining[i];
 
@@ -287,14 +288,17 @@ void ConvexMPCLocomotion::run(ControlFSMData<float>& data) {
     float p_rel_max = 0.3f;
 
     // Using the estimated velocity is correct
-    //Vec3<float> des_vel_world = seResult.rBody.transpose() * des_vel;
-    float pfx_rel = seResult.vWorld[0] * (.5 + _parameters->cmpc_bonus_swing) * stance_time +
-      .03f*(seResult.vWorld[0]-v_des_world[0]) +
-      (0.5f*seResult.position[2]/9.81f) * (seResult.vWorld[1]*_yaw_turn_rate);
+//    Vec3<float> des_vel_world = seResult.rBody.transpose() * des_vel;
+//    float pfx_rel = seResult.vWorld[0] * (.5 + _parameters->cmpc_bonus_swing) * stance_time +
+//      .03f*(seResult.vWorld[0]-v_des_world[0]) +
+//      (0.5f*seResult.position[2]/9.81f) * (seResult.vWorld[1]*_yaw_turn_rate);
+//
+//    float pfy_rel = seResult.vWorld[1] * .5 * stance_time * dtMPC +
+//      .03f*(seResult.vWorld[1]-v_des_world[1]) +
+//      (0.5f*seResult.position[2]/9.81f) * (-seResult.vWorld[0]*_yaw_turn_rate);
 
-    float pfy_rel = seResult.vWorld[1] * .5 * stance_time * dtMPC +
-      .03f*(seResult.vWorld[1]-v_des_world[1]) +
-      (0.5f*seResult.position[2]/9.81f) * (-seResult.vWorld[0]*_yaw_turn_rate);
+    float pfx_rel = seResult.vWorld[0] * .5 * stance_time;
+    float pfy_rel = seResult.vWorld[1] * .5 * stance_time;
     pfx_rel = fminf(fmaxf(pfx_rel, -p_rel_max), p_rel_max);
     pfy_rel = fminf(fmaxf(pfy_rel, -p_rel_max), p_rel_max);
     Pf[0] +=  pfx_rel;

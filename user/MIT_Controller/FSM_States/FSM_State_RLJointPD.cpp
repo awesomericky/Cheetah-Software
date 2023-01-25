@@ -18,20 +18,17 @@
  */
 template <typename T>
 FSM_State_RLJointPD<T>::FSM_State_RLJointPD(ControlFSMData<T>* _controlFSMData)
-    : FSM_State<T>(_controlFSMData, FSM_StateName::RL_JOINT_PD, "RL_JOINT_PD"),
-        contactPlanning_(26, 0.01), policy({512, 256, 64}){
+    : FSM_State<T>(_controlFSMData, FSM_StateName::RL_JOINT_PD, "RL_JOINT_PD"), policy({512, 256, 64}){
 
   std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
   std::cout << "Setup Joint Position Control learned by Reinforcement Learning" << std::endl;
   std::cout << "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!" << std::endl;
 
-  std::string modelNumber = "2500";
+  std::string modelNumber = "8000";
   _loadPath = std::string(get_current_dir_name()) + "/../actor_model/actor_" + modelNumber + ".txt";
   policy.updateParamFromTxt(_loadPath);
 
-  contactPlanning_.setStanceAndSwingTime(0.13, 0.13);
-
-  _obsDim = OBSDIM;
+  _obsDim = RLOBSDIM;
   historyLength_ = 12;
   nJoints_ = 12;
   actionDim_ = nJoints_;
@@ -82,8 +79,6 @@ void FSM_State_RLJointPD<T>::onEnter() {
 
   // Reset the transition data
   this->transitionData.zero();
-
-  contactPlanning_.reset();
 
   historyTempMem_.setZero();
   previousAction_ << qInit_;
@@ -153,10 +148,14 @@ void FSM_State_RLJointPD<T>::run() {
   jointPosHist_.head((historyLength_-1) * nJoints_) = historyTempMem_.tail((historyLength_-1) * nJoints_);
   jointPosHist_.tail(nJoints_) = previousJointQ_;
 
-  contactPlanning_.updateContactSequence();
-  isContact_ = contactPlanning_.getIsContact();
-  contactPhase_ = contactPlanning_.getContactPhase();
-  this->_data->_stateEstimator->setContactPhase(isContact_);
+
+  double contactThreshold = -0.4;
+  Vec4<T> isContact; isContact.setZero();
+  isContact << ((pTarget12_(2) - _jointQ(2)) < contactThreshold),
+      ((pTarget12_(5) - _jointQ(5)) < contactThreshold),
+      ((pTarget12_(8) - _jointQ(8)) < contactThreshold),
+      ((pTarget12_(1) - _jointQ(11)) < contactThreshold);
+  this->_data->_stateEstimator->setContactPhase(isContact);
   this->_data->_stateEstimator->run();
   _bodyOri << this->_data->_stateEstimator->getResult().rBody.transpose().row(2).transpose(); // body orientation 3 cf) rBody: R_bw
   _bodyAngularVel << this->_data->_stateEstimator->getResult().omegaBody;  // angular velocity 3
@@ -321,7 +320,7 @@ void FSM_State_RLJointPD<T>::onExit() {
 template class FSM_State_RLJointPD<float>;
 
 template <typename T>
-const Eigen::Matrix<float, OBSDIM, 1> & FSM_State_RLJointPD<T>::getObservation() {
+const Eigen::Matrix<float, RLOBSDIM, 1> & FSM_State_RLJointPD<T>::getObservation() {
   _obs <<
       _bodyOri, _bodyAngularVel,
       _jointQ, _jointQd, previousAction_,
@@ -333,7 +332,6 @@ const Eigen::Matrix<float, OBSDIM, 1> & FSM_State_RLJointPD<T>::getObservation()
       jointVelHist_.segment((historyLength_ - 9) * nJoints_, nJoints_),
       jointVelHist_.segment((historyLength_ - 6) * nJoints_, nJoints_),
       jointVelHist_.segment((historyLength_ - 3) * nJoints_, nJoints_),
-      isContact_, std::sin(contactPhase_(0)), std::cos(contactPhase_(0)),
       command_;
 
   return _obs;

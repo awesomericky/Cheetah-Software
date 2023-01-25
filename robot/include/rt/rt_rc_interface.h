@@ -26,7 +26,10 @@ namespace RC_mode{
   constexpr int VISION = 6;
   constexpr int LOCOMOTION = 11;
   constexpr int RECOVERY_STAND = 12;
-  constexpr int RL_JOINT_PD = 53;
+  constexpr int ILRL_JOINT_PD = 53;
+  constexpr int RL_JOINT_PD = 54;
+  constexpr int CONCURRENT_RL_JOINT_PD = 55;
+  constexpr int DAGGER_JOINT_PD = 56;
 
   // Experiment Mode
   constexpr int TWO_LEG_STANCE_PRE = 20;
