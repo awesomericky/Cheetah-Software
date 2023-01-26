@@ -66,10 +66,10 @@ void sbus_packet_complete() {
         selected_mode = RC_mode::LOCOMOTION;
       }
       else if (mode_select_left == SWITCH_MIDDLE && mode_select_right == SWITCH_UP) {
-        selected_mode == RC_mode::CONCURRENT_RL_JOINT_PD;
+        selected_mode = RC_mode::CONCURRENT_RL_JOINT_PD;
       }
       else if (mode_select_left == SWITCH_MIDDLE && mode_select_right == SWITCH_MIDDLE) {
-        selected_mode == RC_mode::DAGGER_JOINT_PD;
+        selected_mode = RC_mode::DAGGER_JOINT_PD;
       }
 
     // Deadband
