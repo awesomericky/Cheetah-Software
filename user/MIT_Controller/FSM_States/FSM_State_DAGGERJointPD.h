@@ -66,8 +66,8 @@ class FSM_State_DAGGERJointPD : public FSM_State<T> {
   rai::FuncApprox::MLP_fullyconnected<float, DAGGEROBSDIM, 12, rai::FuncApprox::ActivationType::leakyrelu> policy;
   double control_dt_ = 0.01;
 
+  Eigen::VectorXf _v_x, _v_y, _w;
   int iterationCounter = 0;
-  int iterationsBetweenMPC = 13;
 
   bool emergency_stop = false;
 

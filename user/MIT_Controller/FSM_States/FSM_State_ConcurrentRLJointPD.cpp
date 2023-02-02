@@ -43,6 +43,9 @@ FSM_State_ConcurrentRLJointPD<T>::FSM_State_ConcurrentRLJointPD(ControlFSMData<T
   previousAction_.setZero(actionDim_); prepreviousAction_.setZero(actionDim_);
   footPos_.setZero(4 * 3);
   command_.setZero();
+  _v_x.setZero(600);
+  _v_y.setZero(600);
+  _w.setZero(600);
 
   q_init.setZero(12);
   pTarget12_.setZero(12); pTarget12_prev_.setZero(12);
@@ -67,6 +70,29 @@ FSM_State_ConcurrentRLJointPD<T>::FSM_State_ConcurrentRLJointPD(ControlFSMData<T
   }
   obsMean_file.close();
   obsVariance_file.close();
+
+  std::ifstream v_x_file, v_y_file, w_file;
+  v_x_file.open(std::string(get_current_dir_name()) + "/../actor_model/v_x.txt");
+  v_y_file.open(std::string(get_current_dir_name()) + "/../actor_model/v_y.txt");
+  w_file.open(std::string(get_current_dir_name()) + "/../actor_model/w.txt");
+  if(v_x_file.is_open()) {
+    for(int i = 0; i < _v_x.size(); i++) {
+      std::getline(v_x_file, in_line, ',');
+      _v_x(i) = std::stof(in_line);
+    }
+  }
+  if(v_y_file.is_open()) {
+    for(int i = 0; i < _v_y.size(); i++) {
+      std::getline(v_y_file, in_line, ',');
+      _v_y(i) = std::stof(in_line);
+    }
+  }
+  if(w_file.is_open()) {
+    for(int i = 0; i < _w.size(); i++) {
+      std::getline(w_file, in_line, ',');
+      _w(i) = std::stof(in_line);
+    }
+  }
 
   jointPosErrorHist_.setZero(nJoints_ * historyLength_); jointVelHist_.setZero(nJoints_ * historyLength_);
 
@@ -99,6 +125,8 @@ void FSM_State_ConcurrentRLJointPD<T>::onEnter() {
   }
 
   emergency_stop = false;
+
+  iterationCounter = 0;
 }
 
 /**
@@ -138,6 +166,16 @@ void FSM_State_ConcurrentRLJointPD<T>::run() {
     command_(1) = -this->_data->_desiredStateCommand->gamepadCommand->leftStickAnalog(0);
     command_(2) = this->_data->_desiredStateCommand->gamepadCommand->rightStickAnalog(0);
     if (command_.norm() < 0.4) command_.setZero();
+  }
+
+  if(iterationCounter < 600) {
+    command_(0) = _v_x(iterationCounter);
+    command_(1) = _v_y(iterationCounter);
+    command_(2) = _w(iterationCounter);
+    iterationCounter++;
+  }
+  else {
+    command_ << 0, 0, 0;
   }
 
   double kneeGearRatio = 9.33 / 6.;

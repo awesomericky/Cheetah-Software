@@ -57,6 +57,9 @@ class FSM_State_RLJointPD : public FSM_State<T> {
 
   std::string _loadPath;
 
+  Eigen::VectorXf _v_x, _v_y, _w;
+  int iterationCounter = 0;
+
   std::chrono::steady_clock::time_point begin_;
   std::chrono::steady_clock::time_point end_;
 

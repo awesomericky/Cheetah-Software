@@ -50,6 +50,7 @@ class FSM_State_ILRLJointPD : public FSM_State<T> {
   Eigen::Matrix<float, ILRLOBSDIM, 1> _obs;
   int _obsDim, historyLength_, nJoints_, actionDim_;
   Eigen::VectorXf _obsMean, _obsVar;
+  Eigen::VectorXf _v_x, _v_y, _w;
   Eigen::VectorXf jointPosHist_, jointVelHist_, historyTempMem_;
   Eigen::VectorXf pTarget12_, qInit_;
   Eigen::VectorXf previousAction_;
@@ -67,7 +68,6 @@ class FSM_State_ILRLJointPD : public FSM_State<T> {
   double control_dt_ = 0.01;
 
   int iterationCounter = 0;
-  int iterationsBetweenMPC = 13;
 
   bool emergency_stop = false;
 
