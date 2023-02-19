@@ -48,6 +48,7 @@ ControlFSM<T>::ControlFSM(Quadruped<T>* _quadruped,
   statesList.RLJointPD = new FSM_State_RLJointPD<T>(&data);
   statesList.ConcurrentRLJointPD = new FSM_State_ConcurrentRLJointPD<T>(&data);
   statesList.DAGGERJointPD = new FSM_State_DAGGERJointPD<T>(&data);
+  statesList.SAFERLJointPD = new FSM_State_SAFERLJointPD<T>(&data);
   statesList.impedanceControl = new FSM_State_ImpedanceControl<T>(&data);
   statesList.standUp = new FSM_State_StandUp<T>(&data);
   statesList.balanceStand = new FSM_State_BalanceStand<T>(&data);
@@ -122,6 +123,9 @@ void ControlFSM<T>::runFSM() {
 
     } else if(rc_mode == RC_mode::DAGGER_JOINT_PD){
       data.controlParameters->control_mode = K_DAGGER_JOINT_PD;
+
+    } else if(rc_mode == RC_mode::SAFERL_JOINT_PD){
+      data.controlParameters->control_mode = K_SAFERL_JOINT_PD;
 
     } else if(rc_mode == RC_mode::VISION){
       data.controlParameters->control_mode = K_VISION;
@@ -283,6 +287,9 @@ FSM_State<T>* ControlFSM<T>::getNextState(FSM_StateName stateName) {
 
     case FSM_StateName::DAGGER_JOINT_PD:
       return statesList.DAGGERJointPD;
+
+    case FSM_StateName::SAFERL_JOINT_PD:
+      return statesList.SAFERLJointPD;
 
     case FSM_StateName::IMPEDANCE_CONTROL:
       return statesList.impedanceControl;

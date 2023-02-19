@@ -30,6 +30,7 @@ namespace RC_mode{
   constexpr int RL_JOINT_PD = 54;
   constexpr int CONCURRENT_RL_JOINT_PD = 55;
   constexpr int DAGGER_JOINT_PD = 56;
+  constexpr int SAFERL_JOINT_PD = 57;
 
   // Experiment Mode
   constexpr int TWO_LEG_STANCE_PRE = 20;

@@ -119,6 +119,12 @@ FSM_StateName FSM_State_StandUp<T>::checkTransition() {
       this->transitionDuration = 0.0;
       break;
 
+    case K_SAFERL_JOINT_PD:
+      this->nextStateName = FSM_StateName::SAFERL_JOINT_PD;
+      // Transition time is immediate
+      this->transitionDuration = 0.0;
+      break;
+
     default:
       std::cout << "[CONTROL FSM] Bad Request: Cannot transition from "
                 << K_PASSIVE << " to "
@@ -168,6 +174,10 @@ TransitionData<T> FSM_State_StandUp<T>::transition() {
       break;
 
     case FSM_StateName::DAGGER_JOINT_PD:
+      this->transitionData.done = true;
+      break;
+
+    case FSM_StateName::SAFERL_JOINT_PD:
       this->transitionData.done = true;
       break;
 

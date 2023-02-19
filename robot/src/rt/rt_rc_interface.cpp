@@ -71,6 +71,9 @@ void sbus_packet_complete() {
       else if (mode_select_left == SWITCH_MIDDLE && mode_select_right == SWITCH_MIDDLE) {
         selected_mode = RC_mode::DAGGER_JOINT_PD;
       }
+      else if (mode_select_left == SWITCH_MIDDLE && mode_select_right == SWITCH_DOWN) {
+        selected_mode = RC_mode::SAFERL_JOINT_PD;
+      }
 
     // Deadband
     for(int i(0); i<2; ++i){
